@@ -1,5 +1,8 @@
 .. _api_reference:
 
+
+.. Do not modify this file manually. It is generated automatically.
+
 Reference
 ======================
 This API reference is organized by resources:
@@ -20,12 +23,20 @@ Request List
 
 `Agents`_
 	* DELETE /agents/:agent_id  (`Delete an agent`_)
+	* DELETE /agents/:agent_id/group  (`Delete the agent group`_)
+	* DELETE /agents/groups/:group_id  (`Delete group in every agent`_)
 	* GET /agents  (`Get all agents`_)
 	* GET /agents/:agent_id  (`Get an agent`_)
 	* GET /agents/:agent_id/key  (`Get agent key`_)
+	* GET /agents/groups  (`Get groups`_)
+	* GET /agents/groups/:group_id  (`Get agents in a group`_)
+	* GET /agents/groups/:group_id/configuration  (`Get group configuration`_)
+	* GET /agents/groups/:group_id/files  (`Get group files`_)
+	* GET /agents/groups/:group_id/files/:filename  (`Get a file in group`_)
 	* GET /agents/summary  (`Get agents summary`_)
 	* POST /agents  (`Add agent`_)
 	* POST /agents/insert  (`Insert agent`_)
+	* PUT /agents/:agent_id/group/:group_id  (`Assign group to agent`_)
 	* PUT /agents/:agent_id/restart  (`Restart an agent`_)
 	* PUT /agents/:agent_name  (`Add agent (quick method)`_)
 	* PUT /agents/restart  (`Restart all agents`_)
@@ -114,9 +125,9 @@ Add a new agent.
 
 	{
 	   "error": 0,
-	   "data": "003"
+	   "data": "005"
 	}
-	
+
 
 Add agent (quick method)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -146,9 +157,9 @@ Adds a new agent with name :agent_name. This agent will use ANY as IP.
 
 	{
 	   "error": 0,
-	   "data": "004"
+	   "data": "006"
 	}
-	
+
 
 Insert agent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -194,7 +205,7 @@ Insert an agent with an existing id and key.
 	   "error": 0,
 	   "data": "123"
 	}
-	
+
 
 
 Delete
@@ -230,7 +241,378 @@ Removes an agent. You must restart OSSEC after removing an agent.
 	   "error": 0,
 	   "data": "Agent removed"
 	}
-	
+
+
+
+Groups
+++++++++++++++++++++++++++++++++++++++++
+
+Assign group to agent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assings the specified group to the agent.
+
+**Request**:
+
+``PUT`` ::
+
+	/agents/:agent_id/group/:group_id
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``agent_id``       | Number        | Agent unique ID.                                                                                                                                                                                       |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ``group_id``       | String        | Group ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X PUT "https://127.0.0.1:55000/agents/001/group/webserver?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": "Group 'webserver' assigned to agent '001'."
+	}
+
+
+Delete group in every agent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Removes the group in every agent. Agents will have 'default' group.
+
+**Request**:
+
+``DELETE`` ::
+
+	/agents/groups/:group_id
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``group_id``       | String        | Group ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X DELETE "https://127.0.0.1:55000/agents/groups/dmz?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": {
+	      "msg": "Group 'dmz' removed.",
+	      "affected_agents": [
+	         "004"
+	      ]
+	   }
+	}
+
+
+Delete the agent group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Removes the group of the agent. The group will be 'default'.
+
+**Request**:
+
+``DELETE`` ::
+
+	/agents/:agent_id/group
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``agent_id``       | Number        | Agent ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X DELETE "https://127.0.0.1:55000/agents/004/group?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": "Group removed. Current group for agent '004': 'default'."
+	}
+
+
+Get a file in group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the specified file belonging to the group parsed to JSON.
+
+**Request**:
+
+``GET`` ::
+
+	/agents/groups/:group_id/files/:filename
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``group_id``       | String        | Group ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ``file_name``      | String        | Filename                                                                                                                                                                                               |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| type               | String        | Type of file.                                                                                                                                                                                          |
+|                    |               |                                                                                                                                                                                                        |
+|                    |               | Allowed values:                                                                                                                                                                                        |
+|                    |               |                                                                                                                                                                                                        |
+|                    |               | - conf                                                                                                                                                                                                 |
+|                    |               | - rootkit_files                                                                                                                                                                                        |
+|                    |               | - rootkit_trojans                                                                                                                                                                                      |
+|                    |               | - rcl                                                                                                                                                                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X GET "https://127.0.0.1:55000/agents/groups/webserver/files/cis_debian_linux_rcl.txt?pretty"
+
+**Example Response:**
+::
+
+	{
+	    "data": {
+	        "controls": [
+	            {
+	                "...": "..."
+	            },
+	            {
+	                "condition": "all required",
+	                "name": "CIS - Testing against the CIS Debian Linux Benchmark v1",
+	                "reference": "CIS_Debian_Benchmark_v1.0pdf",
+	                "checks": [
+	                    "f:/etc/debian_version;"
+	                ]
+	            }
+	        ]
+	    },
+	    "error": 0
+	}
+
+Get agents in a group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the list of agent in a group.
+
+**Request**:
+
+``GET`` ::
+
+	/agents/groups/:group_id
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``group_id``       | String        | Group ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| offset             | Number        | First element to return in the collection.                                                                                                                                                             |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| limit              | Number        | Maximum number of elements to return.                                                                                                                                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| sort               | String        | Sorts the collection by a field or fields (separated by comma). Use +/- at the begining to ascending or descending order.                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| search             | String        | Looks for elements with the specified string.                                                                                                                                                          |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X GET "https://127.0.0.1:55000/agents/groups/webserver?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": {
+	      "totalItems": 1,
+	      "items": [
+	         {
+	            "id": "001",
+	            "name": "server001"
+	         }
+	      ]
+	   }
+	}
+
+
+Get group configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the group configuration (agent.conf).
+
+**Request**:
+
+``GET`` ::
+
+	/agents/groups/:group_id/configuration
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``group_id``       | String        | Group ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| offset             | Number        | First element to return in the collection.                                                                                                                                                             |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| limit              | Number        | Maximum number of elements to return.                                                                                                                                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X GET "https://127.0.0.1:55000/agents/groups/webserver/configuration?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": {
+	      "totalItems": 2,
+	      "items": [
+	         {
+	            "config": {
+	               "localfile": [
+	                  {
+	                     "log_format": "syslog",
+	                     "location": "/var/log/linux.log"
+	                  }
+	               ]
+	            },
+	            "filters": {
+	               "os": "Linux"
+	            }
+	         },
+	         {
+	            "config": {
+	               "localfile": [
+	                  {
+	                     "log_format": "syslog",
+	                     "location": "/var/log/windows.log"
+	                  }
+	               ]
+	            },
+	            "filters": {
+	               "os": "Windows"
+	            }
+	         }
+	      ]
+	   }
+	}
+
+
+Get group files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the files belonging to the group.
+
+**Request**:
+
+``GET`` ::
+
+	/agents/groups/:group_id/files
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| ``group_id``       | String        | Group ID.                                                                                                                                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X GET "https://127.0.0.1:55000/agents/groups/webserver/files?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": [
+	      "system_audit_rcl.txt",
+	      "cis_sles11_linux_rcl.txt",
+	      "win_applications_rcl.txt",
+	      "system_audit_ssh.txt",
+	      "cis_sles12_linux_rcl.txt",
+	      "cis_rhel7_linux_rcl.txt",
+	      "merged.mg",
+	      "cis_rhel_linux_rcl.txt",
+	      "cis_debian_linux_rcl.txt",
+	      "rootkit_files.txt",
+	      "agent.conf",
+	      "win_malware_rcl.txt",
+	      "cis_rhel6_linux_rcl.txt",
+	      "cis_rhel5_linux_rcl.txt",
+	      "win_audit_rcl.txt",
+	      "rootkit_trojans.txt"
+	   ]
+	}
+
+
+Get groups
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the list of existing agent groups.
+
+**Request**:
+
+``GET`` ::
+
+	/agents/groups
+
+**Parameters:**
+
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Param              | Type          | Description                                                                                                                                                                                            |
++====================+===============+========================================================================================================================================================================================================+
+| offset             | Number        | First element to return in the collection.                                                                                                                                                             |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| limit              | Number        | Maximum number of elements to return.                                                                                                                                                                  |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| sort               | String        | Sorts the collection by a field or fields (separated by comma). Use +/- at the begining to ascending or descending order.                                                                              |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| search             | String        | Looks for elements with the specified string.                                                                                                                                                          |
++--------------------+---------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Example Request:**
+::
+
+	curl -u foo:bar -k -X GET "https://127.0.0.1:55000/agents/groups?pretty"
+
+**Example Response:**
+::
+
+	{
+	   "error": 0,
+	   "data": {
+	      "totalItems": 3,
+	      "items": [
+	         "database",
+	         "default",
+	         "webserver"
+	      ]
+	   }
+	}
+
 
 
 Info
@@ -258,12 +640,12 @@ Returns a summary of the available agents.
 	   "error": 0,
 	   "data": {
 	      "Active": 2,
-	      "Never connected": 3,
-	      "Total": 5,
+	      "Never connected": 5,
+	      "Total": 7,
 	      "Disconnected": 0
 	   }
 	}
-	
+
 
 Get all agents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -308,12 +690,12 @@ Returns a list with the available agents.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 5,
+	      "totalItems": 7,
 	      "items": [
 	         {
 	            "status": "Never connected",
 	            "ip": "any",
-	            "id": "004",
+	            "id": "006",
 	            "name": "myNewAgent"
 	         },
 	         {
@@ -325,25 +707,25 @@ Returns a list with the available agents.
 	         {
 	            "status": "Never connected",
 	            "ip": "10.0.0.9",
-	            "id": "003",
+	            "id": "005",
 	            "name": "NewHost"
 	         },
 	         {
 	            "status": "Active",
 	            "ip": "10.0.0.62",
 	            "id": "001",
-	            "name": "WebServer1"
+	            "name": "server001"
 	         },
 	         {
-	            "status": "Active",
-	            "ip": "127.0.0.1",
-	            "id": "000",
-	            "name": "ip-10-0-0-10"
+	            "status": "Never connected",
+	            "ip": "10.0.0.15",
+	            "id": "003",
+	            "name": "main_database"
 	         }
 	      ]
 	   }
 	}
-	
+
 
 Get an agent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -377,15 +759,15 @@ Returns the information of an agent.
 	      "status": "Active",
 	      "name": "ip-10-0-0-10",
 	      "ip": "127.0.0.1",
-	      "dateAdd": "2017-03-02 18:46:12",
-	      "version": "Wazuh v2.0",
+	      "dateAdd": "2017-05-08 10:40:24",
+	      "version": "Wazuh v3.0-alpha1",
 	      "os_family": "Linux",
 	      "lastKeepAlive": "9999-12-31 23:59:59",
 	      "os": "Linux ip-10-0-0-10 3.16.0-4-amd64 #1 SMP Debian 3.16.36-1+deb8u2 (2016-10-19) x86_64",
 	      "id": "000"
 	   }
 	}
-	
+
 
 
 Key
@@ -419,9 +801,9 @@ Returns the key of an agent.
 
 	{
 	   "error": 0,
-	   "data": "MDAxIFdlYlNlcnZlcjEgMTAuMC4wLjYyIDNlZjEwYTQ2MGZmZDEwNDlhNDhiMmI1NjRjZmFiNGQxNmFiYzIzMzQ2NDM3MWY0ODQwZDQ0ZDJjN2RkNDkwZTE="
+	   "data": "MDAxIHNlcnZlcjAwMSAxMC4wLjAuNjIgMDZiZmQzMzI2MWQ5NTc0MDQ5OWRiMGY5OTFhNjgzZWI0ZTM4MTQzNTFjMDYxZTFjNGQ4ZWQ0NTFjMjdmOGZlZQ=="
 	}
-	
+
 
 
 Restart
@@ -446,7 +828,7 @@ Restarts all agents.
 ::
 
 	{
-	    "data": "Restarting all agents", 
+	    "data": "Restarting all agents",
 	    "error": 0
 	}
 
@@ -477,7 +859,7 @@ Restarts the agent.
 ::
 
 	{
-	    "data": "Restarting agent", 
+	    "data": "Restarting agent",
 	    "error": 0
 	}
 
@@ -535,8 +917,19 @@ Returns all decoders included in ossec.conf.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 423,
+	      "totalItems": 473,
 	      "items": [
+	         {
+	            "status": "enabled",
+	            "name": "json",
+	            "details": {
+	               "plugin_decoder": "JSON_Decoder",
+	               "prematch": "^{\\s*\""
+	            },
+	            "file": "0005-json_decoders.xml",
+	            "position": 0,
+	            "path": "/var/ossec/ruleset/decoders"
+	         },
 	         {
 	            "status": "enabled",
 	            "name": "ar_log",
@@ -546,23 +939,11 @@ Returns all decoders included in ossec.conf.
 	            "file": "0010-active-response_decoders.xml",
 	            "position": 0,
 	            "path": "/var/ossec/ruleset/decoders"
-	         },
-	         {
-	            "status": "enabled",
-	            "name": "ar_log_fields",
-	            "details": {
-	               "regex": "^(\\S+) (\\S+) - (\\S+) (\\.+) |^(\\S+)\" (\\S+) \"-\" \"(\\S+)\" \"(\\.+) ",
-	               "order": "script, type, srcip, id",
-	               "parent": "ar_log"
-	            },
-	            "file": "0010-active-response_decoders.xml",
-	            "position": 1,
-	            "path": "/var/ossec/ruleset/decoders"
 	         }
 	      ]
 	   }
 	}
-	
+
 
 Get all decoders files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -613,7 +994,7 @@ Returns all decoders files included in ossec.conf.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 78,
+	      "totalItems": 84,
 	      "items": [
 	         {
 	            "status": "enabled",
@@ -643,6 +1024,11 @@ Returns all decoders files included in ossec.conf.
 	         {
 	            "status": "enabled",
 	            "path": "/var/ossec/ruleset/decoders",
+	            "file": "0405-mongodb_decoders.xml"
+	         },
+	         {
+	            "status": "enabled",
+	            "path": "/var/ossec/ruleset/decoders",
 	            "file": "0090-dragon-nids_decoders.xml"
 	         },
 	         {
@@ -659,16 +1045,11 @@ Returns all decoders files included in ossec.conf.
 	            "status": "enabled",
 	            "path": "/var/ossec/ruleset/decoders",
 	            "file": "0165-netscreen_decoders.xml"
-	         },
-	         {
-	            "status": "enabled",
-	            "path": "/var/ossec/ruleset/decoders",
-	            "file": "0065-cisco-ios_decoders.xml"
 	         }
 	      ]
 	   }
 	}
-	
+
 
 Get all parent decoders
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -705,7 +1086,7 @@ Returns all parent decoders included in ossec.conf
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 116,
+	      "totalItems": 121,
 	      "items": [
 	         {
 	            "status": "enabled",
@@ -719,20 +1100,18 @@ Returns all parent decoders included in ossec.conf
 	         },
 	         {
 	            "status": "enabled",
-	            "name": "zeus",
+	            "name": "jenkins",
 	            "details": {
-	               "regex": " host=(\\S+), ",
-	               "order": "srcip",
-	               "prematch": "^[\\d\\d/\\w\\w\\w/\\d\\d\\d\\d:\\d\\d:\\d\\d:\\d\\d \\S+] "
+	               "prematch": "^\\w+ \\d+, \\d+ \\d+:\\d+:\\d+ \\w\\w \\S+ \\w+\\s"
 	            },
-	            "file": "0390-zeus_decoders.xml",
+	            "file": "0415-jenkins_decoders.xml",
 	            "position": 0,
 	            "path": "/var/ossec/ruleset/decoders"
 	         }
 	      ]
 	   }
 	}
-	
+
 
 Get decoders by name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -806,7 +1185,7 @@ Returns the decoders with the specified name.
 	      ]
 	   }
 	}
-	
+
 
 
 
@@ -862,7 +1241,7 @@ Returns ossec.conf in JSON format.
 	      "logall_json": "no"
 	   }
 	}
-	
+
 
 
 Info
@@ -889,18 +1268,18 @@ Returns basic information about Manager.
 	{
 	   "error": 0,
 	   "data": {
-	      "installation_date": "Thu Mar  2 16:45:41 UTC 2017",
-	      "version": "v2.0",
+	      "installation_date": "Mon May  8 10:40:24 UTC 2017",
+	      "version": "v3.0.0-alpha1",
 	      "openssl_support": "yes",
 	      "max_agents": "8000",
-	      "ruleset_version": "v2.0",
+	      "ruleset_version": "v2.0.1",
 	      "path": "/var/ossec",
 	      "tz_name": "UTC",
 	      "type": "server",
 	      "tz_offset": "+0000"
 	   }
 	}
-	
+
 
 Get manager status
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -934,7 +1313,7 @@ Returns the Manager processes that are running.
 	      "ossec-maild": "stopped"
 	   }
 	}
-	
+
 
 
 Logs
@@ -984,15 +1363,15 @@ Returns the 3 last months of ossec.log.
 
 	{
 	    "data": {
-	        "totalItems": 16480, 
+	        "totalItems": 16480,
 	        "items": [
-	            "2016/07/15 09:33:49 ossec-syscheckd: INFO: Syscheck scan frequency: 3600 seconds", 
-	            "2016/07/15 09:33:49 ossec-syscheckd: INFO: Starting syscheck scan (forwarding database).", 
-	            "2016/07/15 09:33:49 ossec-syscheckd: INFO: Starting syscheck database (pre-scan).", 
-	            "2016/07/15 09:33:42 ossec-logcollector: INFO: Started (pid: 2832).", 
+	            "2016/07/15 09:33:49 ossec-syscheckd: INFO: Syscheck scan frequency: 3600 seconds",
+	            "2016/07/15 09:33:49 ossec-syscheckd: INFO: Starting syscheck scan (forwarding database).",
+	            "2016/07/15 09:33:49 ossec-syscheckd: INFO: Starting syscheck database (pre-scan).",
+	            "2016/07/15 09:33:42 ossec-logcollector: INFO: Started (pid: 2832).",
 	            "2016/07/15 09:33:42 ossec-logcollector: INFO: Monitoring output of command(360): df -P"
 	        ]
-	    }, 
+	    },
 	    "error": 0
 	}
 
@@ -1023,8 +1402,8 @@ Returns a summary about the 3 last months of ossec.log.
 	         "error": 0
 	      },
 	      "ossec-testrule": {
-	         "info": 632,
-	         "all": 632,
+	         "info": 680,
+	         "all": 680,
 	         "error": 0
 	      },
 	      "wazuh-modulesd:oscap": {
@@ -1033,8 +1412,8 @@ Returns a summary about the 3 last months of ossec.log.
 	         "error": 0
 	      },
 	      "ossec-rootcheck": {
-	         "info": 20,
-	         "all": 20,
+	         "info": 16,
+	         "all": 16,
 	         "error": 0
 	      },
 	      "ossec-monitord": {
@@ -1043,8 +1422,8 @@ Returns a summary about the 3 last months of ossec.log.
 	         "error": 0
 	      },
 	      "ossec-logcollector": {
-	         "info": 95,
-	         "all": 103,
+	         "info": 103,
+	         "all": 111,
 	         "error": 8
 	      },
 	      "ossec-execd": {
@@ -1053,28 +1432,28 @@ Returns a summary about the 3 last months of ossec.log.
 	         "error": 0
 	      },
 	      "ossec-remoted": {
-	         "info": 246,
-	         "all": 7947,
-	         "error": 7701
+	         "info": 198,
+	         "all": 225,
+	         "error": 27
 	      },
 	      "ossec-syscheckd": {
-	         "info": 201,
-	         "all": 201,
+	         "info": 200,
+	         "all": 200,
 	         "error": 0
 	      },
 	      "ossec-analysisd": {
-	         "info": 1423,
-	         "all": 1423,
+	         "info": 1543,
+	         "all": 1543,
 	         "error": 0
 	      },
 	      "wazuh-modulesd:database": {
-	         "info": 10,
-	         "all": 3044,
-	         "error": 3034
+	         "info": 8,
+	         "all": 13,
+	         "error": 5
 	      }
 	   }
 	}
-	
+
 
 
 Stats
@@ -1109,31 +1488,31 @@ Returns OSSEC statistical information of current date.
 	{
 	    "data": [
 	        {
-	            "hour": 5, 
-	            "firewall": 0, 
+	            "hour": 5,
+	            "firewall": 0,
 	            "alerts": [
 	                {
-	                    "level": 3, 
-	                    "sigid": 5715, 
+	                    "level": 3,
+	                    "sigid": 5715,
 	                    "times": 4
-	                }, 
+	                },
 	                {
-	                    "level": 2, 
-	                    "sigid": 1002, 
+	                    "level": 2,
+	                    "sigid": 1002,
 	                    "times": 2
-	                }, 
+	                },
 	                {
 	                    "...": "..."
 	                }
-	            ], 
-	            "totalAlerts": 107, 
-	            "syscheck": 1257, 
+	            ],
+	            "totalAlerts": 107,
+	            "syscheck": 1257,
 	            "events": 1483
-	        }, 
+	        },
 	        {
 	            "...": "..."
 	        }
-	    ], 
+	    ],
 	    "error": 0
 	}
 
@@ -1158,16 +1537,16 @@ Returns OSSEC statistical information per hour. Each item in averages field repr
 	{
 	    "data": {
 	        "averages": [
-	            100, 
-	            357, 
-	            242, 
-	            500, 
-	            422, 
-	            "...", 
+	            100,
+	            357,
+	            242,
+	            500,
+	            422,
+	            "...",
 	            123
-	        ], 
+	        ],
 	        "interactions": 0
-	    }, 
+	    },
 	    "error": 0
 	}
 
@@ -1193,61 +1572,61 @@ Returns OSSEC statistical information per week. Each item in hours field represe
 	    "data": {
 	        "Wed": {
 	            "hours": [
-	                223, 
-	                "...", 
+	                223,
+	                "...",
 	                456
-	            ], 
+	            ],
 	            "interactions": 0
-	        }, 
+	        },
 	        "Sun": {
 	            "hours": [
-	                332, 
-	                "...", 
+	                332,
+	                "...",
 	                313
-	            ], 
+	            ],
 	            "interactions": 0
-	        }, 
+	        },
 	        "Thu": {
 	            "hours": [
-	                888, 
-	                "...", 
+	                888,
+	                "...",
 	                123
-	            ], 
+	            ],
 	            "interactions": 0
-	        }, 
+	        },
 	        "Tue": {
 	            "hours": [
-	                536, 
-	                "...", 
+	                536,
+	                "...",
 	                345
-	            ], 
+	            ],
 	            "interactions": 0
-	        }, 
+	        },
 	        "Mon": {
 	            "hours": [
-	                444, 
-	                "...", 
+	                444,
+	                "...",
 	                556
-	            ], 
+	            ],
 	            "interactions": 0
-	        }, 
+	        },
 	        "Fri": {
 	            "hours": [
-	                131, 
-	                "...", 
+	                131,
+	                "...",
 	                432
-	            ], 
+	            ],
 	            "interactions": 0
-	        }, 
+	        },
 	        "Sat": {
 	            "hours": [
-	                134, 
-	                "...", 
+	                134,
+	                "...",
 	                995
-	            ], 
+	            ],
 	            "interactions": 0
 	        }
-	    }, 
+	    },
 	    "error": 0
 	}
 
@@ -1277,7 +1656,7 @@ Clears the rootcheck database for all agents.
 ::
 
 	{
-	    "data": "Rootcheck database deleted", 
+	    "data": "Rootcheck database deleted",
 	    "error": 0
 	}
 
@@ -1308,7 +1687,7 @@ Clears the rootcheck database for an agent.
 ::
 
 	{
-	    "data": "Rootcheck database deleted", 
+	    "data": "Rootcheck database deleted",
 	    "error": 0
 	}
 
@@ -1345,11 +1724,11 @@ Return the timestamp of the last rootcheck scan.
 	{
 	   "error": 0,
 	   "data": {
-	      "rootcheckEndTime": "2017-03-02 23:48:52",
-	      "rootcheckTime": "2017-03-02 23:43:58"
+	      "start": "2017-05-08 11:59:52",
+	      "end": "2017-05-08 11:43:26"
 	   }
 	}
-	
+
 
 Get rootcheck CIS requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1393,7 +1772,7 @@ Returns the CIS requirements of all rootchecks of the agent.
 	      ]
 	   }
 	}
-	
+
 
 Get rootcheck database
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1440,22 +1819,22 @@ Returns the rootcheck database of an agent.
 	      "items": [
 	         {
 	            "status": "outstanding",
-	            "oldDay": "2017-03-02 23:43:59",
+	            "oldDay": "2017-05-04 13:31:39",
 	            "cis": "1.4 Debian Linux",
-	            "readDay": "2017-03-02 23:43:59",
+	            "readDay": "2017-05-08 11:59:54",
 	            "event": "System Audit: CIS - Debian Linux - 1.4 - Robust partition scheme - /opt is not on its own partition {CIS: 1.4 Debian Linux}. File: /opt. Reference: https://benchmarks.cisecurity.org/tools2/linux/CIS_Debian_Benchmark_v1.0.pdf ."
 	         },
 	         {
 	            "status": "outstanding",
-	            "oldDay": "2017-03-02 23:43:59",
+	            "oldDay": "2017-05-04 13:31:39",
 	            "cis": "1.4 Debian Linux",
-	            "readDay": "2017-03-02 23:43:59",
+	            "readDay": "2017-05-08 11:59:54",
 	            "event": "System Audit: CIS - Debian Linux - 1.4 - Robust partition scheme - /tmp is not on its own partition {CIS: 1.4 Debian Linux}. File: /etc/fstab. Reference: https://benchmarks.cisecurity.org/tools2/linux/CIS_Debian_Benchmark_v1.0.pdf ."
 	         }
 	      ]
 	   }
 	}
-	
+
 
 Get rootcheck pci requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1499,7 +1878,7 @@ Returns the PCI requirements of all rootchecks of the agent.
 	      ]
 	   }
 	}
-	
+
 
 
 Run
@@ -1524,7 +1903,7 @@ Runs syscheck and rootcheck on all agent, due to OSSEC launches both processes a
 ::
 
 	{
-	    "data": "Restarting Syscheck/Rootcheck on all agents", 
+	    "data": "Restarting Syscheck/Rootcheck on all agents",
 	    "error": 0
 	}
 
@@ -1558,7 +1937,7 @@ Runs syscheck and rootcheck on an agent, due to OSSEC launches both processes at
 	   "error": 0,
 	   "data": "Restarting Syscheck/Rootcheck locally"
 	}
-	
+
 
 
 
@@ -1620,7 +1999,7 @@ Returns all rules.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 1619,
+	      "totalItems": 1691,
 	      "items": [
 	         {
 	            "status": "enabled",
@@ -1657,7 +2036,7 @@ Returns all rules.
 	      ]
 	   }
 	}
-	
+
 
 Get files of rules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1708,7 +2087,7 @@ Returns the files of all rules.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 85,
+	      "totalItems": 94,
 	      "items": [
 	         {
 	            "status": "enabled",
@@ -1763,7 +2142,7 @@ Returns the files of all rules.
 	      ]
 	   }
 	}
-	
+
 
 Get rule groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1800,7 +2179,7 @@ Returns the groups of all rules.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 200,
+	      "totalItems": 240,
 	      "items": [
 	         "access_control",
 	         "access_denied",
@@ -1815,7 +2194,7 @@ Returns the groups of all rules.
 	      ]
 	   }
 	}
-	
+
 
 Get rule pci requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1867,7 +2246,7 @@ Returns the PCI requirements of all rules.
 	      ]
 	   }
 	}
-	
+
 
 Get rules by id
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1928,7 +2307,7 @@ Returns the rules with the specified id.
 	      ]
 	   }
 	}
-	
+
 
 
 
@@ -1956,7 +2335,7 @@ Clears the syscheck database for all agents.
 ::
 
 	{
-	    "data": "Syscheck database deleted", 
+	    "data": "Syscheck database deleted",
 	    "error": 0
 	}
 
@@ -1987,7 +2366,7 @@ Clears the syscheck database for an agent.
 ::
 
 	{
-	    "data": "Syscheck database deleted", 
+	    "data": "Syscheck database deleted",
 	    "error": 0
 	}
 
@@ -2024,11 +2403,11 @@ Return the timestamp of the last syscheck scan.
 	{
 	   "error": 0,
 	   "data": {
-	      "syscheckTime": "2017-03-02 23:37:18",
-	      "syscheckEndTime": "2017-03-02 23:43:38"
+	      "start": "2017-05-08 11:59:50",
+	      "end": "2017-05-08 11:59:52"
 	   }
 	}
-	
+
 
 Get syscheck files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2098,44 +2477,28 @@ Returns the syscheck files of an agent.
 	{
 	   "error": 0,
 	   "data": {
-	      "totalItems": 2762,
+	      "totalItems": 1,
 	      "items": [
 	         {
-	            "sha1": "4fed08ccbd0168593a6fffcd925adad65e5ae6d9",
-	            "group": "root",
+	            "sha1": "3fdc1ede9503ed74f9d1f5d776b1e398f4cfbdc5",
+	            "group": "ossec",
 	            "uid": 0,
-	            "scanDate": "2017-03-02 23:43:28",
-	            "gid": 0,
+	            "scanDate": "2017-05-08 10:41:31",
+	            "gid": 999,
 	            "user": "root",
-	            "file": "!1488498208 /boot/config-3.16.0-4-amd64",
-	            "modificationDate": "2016-10-19 06:45:50",
-	            "octalMode": "100644",
-	            "permissions": "-rw-r--r--",
-	            "md5": "46d43391ae54c1084a2d40e8d1b4873c",
-	            "inode": 5217,
-	            "event": "added",
-	            "size": 157721
-	         },
-	         {
-	            "sha1": "d48151a3d3638b723f5d7bc1e9c71d478fcde4e6",
-	            "group": "root",
-	            "uid": 0,
-	            "scanDate": "2017-03-02 23:43:26",
-	            "gid": 0,
-	            "user": "root",
-	            "file": "!1488498206 /boot/System.map-3.16.0-4-amd64",
-	            "modificationDate": "2016-10-19 06:45:50",
-	            "octalMode": "100644",
-	            "permissions": "-rw-r--r--",
-	            "md5": "29cc12246faecd4a14d212b4d9bac0fe",
-	            "inode": 5216,
-	            "event": "added",
-	            "size": 2679264
+	            "file": "/etc/ossec-init.conf",
+	            "modificationDate": "2017-05-08 10:40:24",
+	            "octalMode": "100640",
+	            "permissions": "-rw-r-----",
+	            "md5": "eec093421b230b876afdba0086f586fa",
+	            "inode": 303,
+	            "event": "modified",
+	            "size": 126
 	         }
 	      ]
 	   }
 	}
-	
+
 
 
 Run
@@ -2160,7 +2523,7 @@ Runs syscheck and rootcheck on all agent, due to OSSEC launches both processes a
 ::
 
 	{
-	    "data": "Restarting Syscheck/Rootcheck on all agents", 
+	    "data": "Restarting Syscheck/Rootcheck on all agents",
 	    "error": 0
 	}
 
@@ -2194,7 +2557,3 @@ Runs syscheck and rootcheck on an agent, due to OSSEC launches both processes at
 	   "error": 0,
 	   "data": "Restarting Syscheck/Rootcheck locally"
 	}
-	
-
-
-
