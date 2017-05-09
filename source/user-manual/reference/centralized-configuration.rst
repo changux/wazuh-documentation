@@ -13,7 +13,7 @@ Agents can be configured remotely by using the ``agent.conf`` file. The followin
 - :doc:`Log data collection <../capabilities/log-data-collection/index>` (**localfile**)
 - :doc:`Security policy monitoring <../capabilities/policy-monitoring/index>` (**rootcheck**, **wodle name="open-scap"**)
 
-Agent grouping
+Agent groups
 --------------------------------
 
 .. versionadded:: 3.0
