@@ -11,5 +11,6 @@ This section will describe how to manage the agents. Some basic actions like reg
         :maxdepth: 2
 
         registering-agents/index
+        grouping-agents
         listing-agents
         removing-agents
