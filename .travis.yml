@@ -2,14 +2,6 @@ language: python
 python:
   - "2.7"
 install: "pip install sphinx_rtd_theme git+https://github.com/changux/sphinxcontrib-images.git"
-script: make html
-after_success:
-addons:
-  artifacts: true
-    debug: true
-    s3_region: us-east-2
-    paths:
-     - ./build/html
-    target_paths: $TRAVIS_BUILD_NUMBER
-    working_dir: WORKING_DIR
-    bucket: doc-data-wazuh
+script: 
+  - make html
+  - git clone https://github.com/perfectsense/travis-s3-deploy.git && deploy.sh
