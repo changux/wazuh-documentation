@@ -1,8 +1,7 @@
 language: python
 python:
   - "2.7"
-install: "pip install sphinx_rtd_theme"
-install: "pip install git+https://github.com/changux/sphinxcontrib-images.git"
+install: "pip install sphinx_rtd_theme git+https://github.com/changux/sphinxcontrib-images.git"
 script: make html
 # Flags used here, not in `make html`:
 #  -n   Run in nit-picky mode. Currently, this generates warnings for all missing references.
