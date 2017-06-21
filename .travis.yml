@@ -3,3 +3,10 @@ python:
   - "2.7"
 install: "pip install sphinx_rtd_theme git+https://github.com/changux/sphinxcontrib-images.git"
 script: make html
+
+env:
+  global:
+    - DEPLOY_BUCKET=doc-data-wazuh
+
+script:
+  - git clone https://github.com/perfectsense/travis-s3-deploy.git && travis-s3-deploy/deploy.sh
